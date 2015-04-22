@@ -268,7 +268,6 @@ function GameTimer(d) {
         this.disableControls = false;
     };
     this.setState = function (state) {
-        console.log("State:", state);
         this.currently = state;
         this.setStyle(state);
     };
@@ -352,7 +351,6 @@ function GameTimer(d) {
                 window.URL.revokeObjectURL(textFile);
             }
             textFile = window.URL.createObjectURL(data);
-            console.log(splitsObject.info[0]);
             saveAs(data, splitsObject.info[0] + " - " + splitsObject.info[1] + ".wsplit");
         };
         makeTextFile(wspltFile); // How does any of this crap work?
@@ -404,7 +402,11 @@ function GameTimer(d) {
         if (confirm("Would you like to save?")) {
         }
         else {
-            /* OK */
+            /* Cancel */
+            return false;
+        }
+        if (this.currentSplit === 1) {
+            window.alert("No splits available to save.");
             return false;
         }
         for (var step = 1; step <= this.totalSplits; step++) {
@@ -447,7 +449,7 @@ function GameTimer(d) {
         for (var step = 1; step <= this.totalSplits; step++) {
             var container = document.createElement('span');
             container.id = "row" + step;
-            container.innerHTML = '<input id="splitname' + step + '" type="text" value="' + splitsObject[step][0] + '" />' + '<input id="bestsegment' + step + '" type="text" value="' + this.realTime(splitsObject[step][2]) + '">' + '<input id="difference' + step + '" type="text" value="' + this.realTime(splitsObject[step][1]) + '">';
+            container.innerHTML = '<input id="splitname' + step + '" type="text" value="' + splitsObject[step][0] + '" />' + '<input id="bestsegment' + step + '" type="text" value="' + this.realTime(splitsObject[step][2], true) + '">' + '<input id="difference' + step + '" type="text" value="' + this.realTime(splitsObject[step][1], true) + '">';
             document.getElementById("splits-table").appendChild(container);
         }
         document.getElementById("editor-controls").innerHTML = '<input type="button" value="Add split" onclick="t.addSplit()"/>&nbsp<input type="button" value="Del split" onclick="t.removeSplit()"/><input type="button" value="Save" onclick="t.saveNewSplits()"/>&nbsp<input type="button" value="Exit" onclick="t.genSplits()"/>';
@@ -551,9 +553,9 @@ function GameTimer(d) {
         }
     };
     // Timing stuff
-    this.realTime = function (t) {
-        var h = Math.floor(t / 3600000), m = Math.abs(Math.floor((t / 60000) % 60)), s = Math.abs(Math.floor((t / 1000) % 60)), msd = this.ms[(h > 0) ? 1 : 0], ms = Math.abs(Math.floor((t % 1000) / (Math.pow(10, (3 - msd)))));
-        if (t < 0) {
+    this.realTime = function (time, isEditor) {
+        var h = Math.floor(time / 3600000), m = Math.abs(Math.floor((time / 60000) % 60)), s = Math.abs(Math.floor((time / 1000) % 60)), msd = this.ms[(h > 0) ? 1 : 0], ms = Math.abs(Math.floor((time % 1000) / (Math.pow(10, (3 - msd)))));
+        if (time < 0) {
             ms -= 1;
             s -= 1;
             m -= 1;
@@ -562,6 +564,10 @@ function GameTimer(d) {
             h += 1;
         }
         var humanTime;
+        if (isEditor === true) {
+            humanTime = ((h !== 0) ? h + ':' : '') + this.pad(m, 2) + ':' + this.pad(s, 2) + ((msd) ? '.' + this.pad(ms, msd) : '');
+            return humanTime;
+        }
         if (h === 0 && m === 0) {
             humanTime = this.pad(s, 1) + ((msd) ? '.' + this.pad(ms, msd) : '').slice(0, -1);
         }
@@ -571,10 +577,10 @@ function GameTimer(d) {
         else {
             humanTime = ((h !== 0) ? h + ':' : '') + this.pad(m, 2) + ':' + this.pad(s, 2); // + ((msd) ? '.' + this.pad(ms, msd) : '');
         }
-        if (t >= 0) {
+        if (time >= 0) {
             return humanTime;
         }
-        else if (t < 0 && h === 0) {
+        else if (time < 0 && h === 0) {
             return '-' + humanTime;
         }
         else if (h !== 0) {
