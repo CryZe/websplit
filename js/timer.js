@@ -405,10 +405,6 @@ function GameTimer(d) {
             /* Cancel */
             return false;
         }
-        if (this.currentSplit === 1) {
-            window.alert("No splits available to save.");
-            return false;
-        }
         for (var step = 1; step <= this.totalSplits; step++) {
             splitsObject[step][1] = splitsObject[step][3];
             if (splitsObject[step][2] === 0) {
